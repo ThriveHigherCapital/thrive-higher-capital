@@ -201,6 +201,11 @@ function Divider() {
 // ==============================
 
 function DealForm({ compact = false, onSubmitted }) {
+  // You must have these defined somewhere (or keep them here):
+
+  // const STORAGE_KEY = "dealFormContact";
+  // const FORMSPREE_ENDPOINT = FORMSPREE_DEAL_ENDPOINT; // or your real endpoint
+
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -267,8 +272,8 @@ function DealForm({ compact = false, onSubmitted }) {
   }, [state.name, state.email, state.phone, state.role, state.preferredContact, state.smsConsent]);
 
   // Requirements + consent rules
-  const phoneProvided = Boolean(state.phone.trim());
-  const emailProvided = Boolean(state.email.trim());
+  const phoneProvided = Boolean(state.phone?.trim());
+  const emailProvided = Boolean(state.email?.trim());
 
   const prefersEmail = state.preferredContact === "Email";
   const prefersText = state.preferredContact === "Text";
@@ -280,124 +285,137 @@ function DealForm({ compact = false, onSubmitted }) {
     emailProvided ||
     phoneProvided;
 
-  const smsConsentRequired = phoneProvided || prefersText;
+  const smsConsentRequired = prefersText;
 
   const requiredOk =
     state.name.trim() &&
     state.address.trim() &&
     preferredMethodOk &&
     (!smsConsentRequired || state.smsConsent);
+    const canSubmit = !!requiredOk && status !== "sending";
 
   const clean = (v, max = 500) => String(v || "").trim().slice(0, max);
 
   async function submit(e) {
     e.preventDefault();
-    if (!requiredOk || status === "sending") return;
+    setErrorMsg("");
 
-    // Honeypot anti-spam
-    if (state.gotcha && state.gotcha.trim().length > 0) {
+    // Honeypot spam trap: if filled, pretend success
+    if (state.gotcha && state.gotcha.trim()) {
       setStatus("success");
       onSubmitted?.();
       return;
     }
 
+    if (!requiredOk) {
+      setStatus("error");
+      setErrorMsg("Please complete the required fields before submitting.");
+      return;
+    }
+
     setStatus("sending");
     setErrorMsg("");
+    
+      try {
+        const payload = {
+          name: clean(state.name, 120),
+          email: clean(state.email, 160),
+          _replyto: clean(state.email, 160),
+          phone: clean(state.phone, 40),
+        
+          role: clean(state.role, 60),
+          preferredContact: clean(state.preferredContact, 20),
+          smsConsent: state.smsConsent ? "Yes" : "No",
+        
+          address: clean(state.address, 200),
+          city: clean(state.city, 120),
+          asking: clean(state.asking, 40),
+          condition: clean(state.condition, 40),
+          timeline: clean(state.timeline, 40),
+        
+          photosLink: clean(state.photosLink, 400),
+          notes: clean(state.notes, 2000),
+        
+          _subject: `Deal Submission — ${CONTACT.brand}`,
+          page: window.location.href,
+          userAgent: navigator.userAgent,
+          _gotcha: clean(state.gotcha, 120),
+        };        
 
-    try {
-      const payload = {
-        name: clean(state.name, 120),
-        email: clean(state.email, 160),
-        _replyto: clean(state.email, 160),
-        phone: clean(state.phone, 40),
-
-        role: clean(state.role, 60),
-        preferredContact: clean(state.preferredContact, 20),
-        smsConsent: state.smsConsent ? "Yes" : "No",
-
-        address: clean(state.address, 200),
-        city: clean(state.city, 120),
-        asking: clean(state.asking, 40),
-        condition: clean(state.condition, 40),
-        timeline: clean(state.timeline, 40),
-
-        photosLink: clean(state.photosLink, 400),
-        notes: clean(state.notes, 2000),
-
-        _subject: `Deal Submission — ${CONTACT.brand}`,
-        page: window.location.href,
-        userAgent: navigator.userAgent,
-      };
-
-      // Use FormData (most reliable for Formspree delivery)
-      const formData = new FormData();
-      Object.entries(payload).forEach(([k, v]) => formData.append(k, v ?? ""));
-
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: formData,
-      });
-
-      if (!res.ok) {
-        let msg = "Submission failed. Please try again.";
-        try {
-          const data = await res.json();
-          if (data?.errors?.length) msg = data.errors.map((x) => x.message).join(" ");
-        } catch {}
-        throw new Error(msg);
+        const formData = new FormData();
+        Object.entries(payload).forEach(([k, v]) => formData.append(k, v ?? ""));
+  
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        });
+  
+        if (!res.ok) {
+          let msg = "Submission failed. Please try again.";
+          try {
+            const data = await res.json();
+            msg =
+              data?.error ||
+              data?.message ||
+              (Array.isArray(data?.errors) && data.errors[0]?.message) ||
+              msg;
+          } catch {}
+          throw new Error(msg);
+        }        
+  
+        setStatus("success");
+  
+        // Clear only deal fields; keep contact fields (saved)
+        setState((s) => ({
+          ...s,
+          address: "",
+          city: "",
+          asking: "",
+          condition: "Average",
+          timeline: "ASAP",
+          photosLink: "",
+          notes: "",
+          gotcha: "",
+        }));
+  
+        onSubmitted?.();
+      } catch (err) {
+        setStatus("error");
+        setErrorMsg(err?.message || "Something went wrong. Please try again.");
       }
-
-      setStatus("success");
-
-      // Clear only deal fields; keep contact fields (saved)
-      setState((s) => ({
-        ...s,
-        address: "",
-        city: "",
-        asking: "",
-        condition: "Average",
-        timeline: "ASAP",
-        photosLink: "",
-        notes: "",
-        gotcha: "",
-      }));
-
-      onSubmitted?.();
-    } catch (err) {
-      setStatus("error");
-      setErrorMsg(err?.message || "Something went wrong. Please try again.");
-    }
-  }
+    }  
+      
 
   return (
-    <form onSubmit={submit} className={clsx("grid gap-3", compact ? "" : "gap-4")} aria-label="Deal submission form">
-      {status === "error" && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          {errorMsg || "Submission failed. Please try again."}
-        </div>
-      )}
-
+    <form
+      onSubmit={submit}
+      className={clsx("grid gap-3", compact ? "" : "gap-4")}
+      aria-label="Deal submission form"
+    >
+      {/* Hidden fields (optional — payload already includes _subject) */}
       <input type="hidden" name="_subject" value={`Deal Submission — ${CONTACT.brand}`} />
+      <input
+        type="hidden"
+        name="_redirect"
+        value={`${window.location.origin}${import.meta.env.BASE_URL || "/"}thanks`}
+      />
 
       {/* Honeypot */}
       <div style={{ position: "absolute", left: "-5000px" }} aria-hidden="true">
-        <label>
-          Leave this empty
-          <input
-            type="text"
-            name="_gotcha"
-            tabIndex="-1"
-            autoComplete="off"
-            value={state.gotcha}
-            onChange={(e) => setState((s) => ({ ...s, gotcha: e.target.value }))}
-          />
-        </label>
+        <input
+          type="text"
+          name="_gotcha"
+          tabIndex="-1"
+          autoComplete="off"
+          value={state.gotcha}
+          onChange={(e) => setState((s) => ({ ...s, gotcha: e.target.value }))}
+        />
       </div>
 
-      {/* Name / Role / Preferred contact */}
-      <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
-        <Field label="Your name" hint="Required">
+            {/* Contact */}
+            <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-3")}>
+        <Field label="Your name *">
           <Input
             value={state.name}
             onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
@@ -406,95 +424,106 @@ function DealForm({ compact = false, onSubmitted }) {
           />
         </Field>
 
-        <Field label="Role">
-          <Select value={state.role} onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}>
-            <option>Agent/Realtor</option>
-            <option>Wholesaler</option>
-            <option>Owner/Seller</option>
-            <option>Investor</option>
-            <option>Other</option>
-          </Select>
-        </Field>
-
-        <Field label="Preferred contact method">
-          <Select
-            value={state.preferredContact}
-            onChange={(e) => setState((s) => ({ ...s, preferredContact: e.target.value }))}
-          >
-            <option>Email</option>
-            <option>Text</option>
-            <option>Call</option>
-          </Select>
-        </Field>
-      </div>
-
-      {/* Email / Phone */}
-      <div className={clsx("grid gap-3", "sm:grid-cols-2")}>
-        <Field label="Email" hint="Required if preferred method = Email">
+        <Field label="Email">
           <Input
             value={state.email}
             onChange={(e) => setState((s) => ({ ...s, email: e.target.value }))}
             placeholder="you@email.com"
-            type="email"
+            inputMode="email"
             autoComplete="email"
           />
         </Field>
 
-        <Field label="Phone" hint="Required if preferred method = Text/Call">
+        <Field label="Phone">
           <Input
             value={state.phone}
             onChange={(e) => setState((s) => ({ ...s, phone: e.target.value }))}
-            placeholder="(###) ###-####"
+            placeholder="(206) 555-1234"
+            inputMode="tel"
             autoComplete="tel"
           />
-
-          <div className="mt-2 flex items-start gap-2 rounded-xl border bg-slate-50 p-3">
-            <input
-              id="smsConsent"
-              type="checkbox"
-              checked={state.smsConsent}
-              onChange={(e) => setState((s) => ({ ...s, smsConsent: e.target.checked }))}
-              className="mt-0.5 h-4 w-4"
-            />
-            <label htmlFor="smsConsent" className="text-xs text-slate-600">
-              I agree to receive text messages from {SMS_POLICY.brand} about this deal submission. {SMS_POLICY.frequency}{" "}
-              {SMS_POLICY.rates} {SMS_POLICY.optOut}
-              <span className="block mt-1 text-slate-500">
-                By providing my number, I’m providing express consent for deal-related texts. See{" "}
-                <a className="underline hover:text-slate-900" href="#sms-consent">
-                  SMS Terms
-                </a>
-                .
-              </span>
-            </label>
-          </div>
         </Field>
       </div>
 
-      {/* Address / City */}
+{/* Property location */}
+<div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-2")}>
+  <Field label="Property address *">
+    <Input
+      value={state.address}
+      onChange={(e) => setState((s) => ({ ...s, address: e.target.value }))}
+      placeholder="123 Main St"
+      autoComplete="street-address"
+    />
+  </Field>
+
+  <Field label="City">
+    <Input
+      value={state.city}
+      onChange={(e) => setState((s) => ({ ...s, city: e.target.value }))}
+      placeholder="Seattle"
+      autoComplete="address-level2"
+    />
+  </Field>
+</div>
+
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
-        <div className="sm:col-span-2">
-          <Field label="Property address" hint="Required">
-            <Input
-              value={state.address}
-              onChange={(e) => setState((s) => ({ ...s, address: e.target.value }))}
-              placeholder="123 Main St"
-              autoComplete="street-address"
-            />
-          </Field>
+        <Field label="I am a…">
+          <Select value={state.role} onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}>
+            <option>Agent/Realtor</option>
+            <option>Wholesaler</option>
+            <option>Seller/Owner</option>
+            <option>Other</option>
+          </Select>
+        </Field>
+
+        {/* Preferred Contact */}
+        <Field label="Preferred contact *">
+  <div className="grid gap-1">
+    <Select
+      value={state.preferredContact}
+      onChange={(e) =>
+        setState((s) => ({ ...s, preferredContact: e.target.value }))
+      }
+    >
+      <option value="Email">Email</option>
+      <option value="Text">Text</option>
+      <option value="Call">Call</option>
+    </Select>
+
+    <div className="text-xs text-slate-500 px-1">
+      Email, Text, or Call
+    </div>
+  </div>
+</Field>
+
+{/* SMS Consent */}
+<Field label="SMS consent *">
+  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+    <div className="flex items-start gap-3">
+      <input
+        id="smsConsent"
+        type="checkbox"
+        className="mt-1"
+        checked={state.smsConsent}
+        onChange={(e) => setState((s) => ({ ...s, smsConsent: e.target.checked }))}
+      />
+
+      <label htmlFor="smsConsent" className="grid gap-1 cursor-pointer">
+        <div className="text-sm text-slate-700 leading-snug">
+          I agree to receive deal-related text messages. Message &amp; data rates may apply.
         </div>
 
-        <Field label="City / Area">
-          <Input
-            value={state.city}
-            onChange={(e) => setState((s) => ({ ...s, city: e.target.value }))}
-            placeholder="Seattle / Bellingham"
-            autoComplete="address-level2"
-          />
-        </Field>
+        <div className="text-xs text-slate-500">
+          {smsConsentRequired
+            ? "Required if Text is selected"
+            : "Optional"}
+        </div>
+      </label>
+    </div>
+  </div>
+</Field>
       </div>
 
-      {/* Asking / Condition / Timeline */}
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
         <Field label="Asking price">
           <Input
@@ -505,7 +534,7 @@ function DealForm({ compact = false, onSubmitted }) {
           />
         </Field>
 
-        <Field label="Condition">
+        <Field label="Condition / repairs">
           <Select value={state.condition} onChange={(e) => setState((s) => ({ ...s, condition: e.target.value }))}>
             <option>Great</option>
             <option>Average</option>
@@ -519,23 +548,21 @@ function DealForm({ compact = false, onSubmitted }) {
             <option>ASAP</option>
             <option>7–14 days</option>
             <option>30 days</option>
-            <option>Flexible</option>
+            <option>60+ days</option>
           </Select>
         </Field>
       </div>
 
-      {/* Photos link */}
-      <Field label="Photos / comps link" hint="Optional but very helpful">
+      <Field label="Photos or link" hint="Google Drive, Dropbox, MLS, etc.">
         <Input
           value={state.photosLink}
           onChange={(e) => setState((s) => ({ ...s, photosLink: e.target.value }))}
-          placeholder="https://drive.google.com/... or MLS link"
+          placeholder="https://..."
           inputMode="url"
         />
       </Field>
 
-      {/* Notes */}
-      <Field label="Notes">
+      <Field label="Notes" hint="Repairs, access, occupancy, comps, offer instructions…">
         <Textarea
           value={state.notes}
           onChange={(e) => setState((s) => ({ ...s, notes: e.target.value }))}
@@ -544,30 +571,65 @@ function DealForm({ compact = false, onSubmitted }) {
         />
       </Field>
 
-      <div className="sticky bottom-0 -mx-5 mt-2 border-t bg-white/95 px-5 py-4 backdrop-blur">
-  <div className={clsx("flex flex-col gap-3", "sm:flex-row sm:items-center sm:justify-between")}>
-    <div className="text-xs text-slate-500">
-      By submitting, you agree we can contact you about this deal. If you provide a phone number (or prefer Text), SMS
-      consent is required.
-    </div>
 
-    <Button
-      type="submit"
-      disabled={!requiredOk || status === "sending"}
-      className={clsx((!requiredOk || status === "sending") && "opacity-60 cursor-not-allowed")}
-    >
-      <Mail className="h-4 w-4" />
-      {status === "sending" ? "Submitting..." : "Submit"}
-    </Button>
+      {status === "error" && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
+
+{status === "success" && (
+  <div className="mb-6 rounded-xl border border-emerald-300 bg-emerald-100 p-4 text-sm text-emerald-800">
+    ✅ Submission complete.
+    <br />
+    Our team has received your deal and will reach out shortly.
   </div>
+)}
+
+      <div className="sticky bottom-0 -mx-5 mt-2 border-t bg-white/95 px-5 py-4 backdrop-blur">
+        <div className={clsx("flex flex-col gap-3", "sm:flex-row sm:items-center sm:justify-between")}>
+          <div className="text-xs text-slate-500">
+            By submitting, you agree we can contact you about this deal. If you provide a phone number (or prefer Text),
+            SMS consent is required.
+          </div>
+          <div className="text-[11px] text-slate-500">
+
+  name:{String(!!state.name.trim())} | address:{String(!!state.address.trim())} |
+  preferredOk:{String(preferredMethodOk)} | smsReq:{String(smsConsentRequired)} |
+  smsOk:{String(!smsConsentRequired || state.smsConsent)} |
+  requiredOk:{String(!!requiredOk)} | status:{String(status)} | canSubmit:{String(!!canSubmit)}
 </div>
+
+<Button
+  type="submit"
+  disabled={!requiredOk || status === "sending"}
+  className={clsx((!requiredOk || status === "sending") && "opacity-60 cursor-not-allowed")}
+>
+  <Mail className="h-4 w-4" />
+  {status === "sending" ? "Sending…" : "Submit"}
+</Button>
+
+        </div>
+      </div>
     </form>
   );
 }
 
-// ==============================
-// MODAL / LOGO
-// ==============================
+function LogoMark() {
+  return (
+    <div className="flex items-center gap-3">
+      <img
+        src={`${import.meta.env.BASE_URL}logo.png`}
+        alt={CONTACT.brand}
+        className="h-16 w-auto md:h-20 drop-shadow-sm"
+      />
+      <div className="leading-tight hidden sm:block">
+        <div className="text-sm font-semibold text-slate-900">{CONTACT.brand}</div>
+        <div className="text-xs text-slate-500">{CONTACT.tagline}</div>
+      </div>
+    </div>
+  );
+}
 
 function Modal({ open, onClose, title, children }) {
   useEffect(() => {
@@ -620,25 +682,16 @@ function Modal({ open, onClose, title, children }) {
   );
 }
 
-function LogoMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <img src="/logo.png" alt={CONTACT.brand} className="h-16 w-auto md:h-20 drop-shadow-sm" />
-      <div className="leading-tight hidden sm:block">
-        <div className="text-sm font-semibold text-slate-900">{CONTACT.brand}</div>
-        <div className="text-xs text-slate-500">{CONTACT.tagline}</div>
-      </div>
-    </div>
-  );
-}
 
 // ==============================
 // APP
 // ==============================
 
+
 export default function App() {
   const [openDeal, setOpenDeal] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
+
   const active = useScrollSpy(NAV.map((n) => n.id));
 
   const valueProps = [
@@ -1150,9 +1203,9 @@ export default function App() {
       </footer>
 
       {/* Modals */}
-      <Modal open={openDeal} onClose={() => setOpenDeal(false)} title="Send a deal">
-        <DealForm compact onSubmitted={() => setOpenDeal(false)} />
-      </Modal>
+<Modal open={openDeal} onClose={() => setOpenDeal(false)} title="Send a deal">
+  <DealForm onSubmitted={() => setOpenDeal(false)} />
+</Modal>
 
       <Modal open={openOffer} onClose={() => setOpenOffer(false)} title="Get a same-day offer (quick details)">
         <div className="grid gap-4">
@@ -1192,3 +1245,7 @@ export default function App() {
 3) Submission should go to Formspree (not mailto).
 4) Phone links should be clickable everywhere (tel:+12062031230).
 */
+{/* Page footer / debug stamp */}
+<div className="mt-4 text-center text-[10px] text-slate-400">
+  build: 2026-01-12-3
+</div>
