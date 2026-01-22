@@ -8,6 +8,11 @@ body {
 body {
   margin: 0;
 }
+.grecaptcha-badge { 
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999999 !important;
+}
 
 
 
