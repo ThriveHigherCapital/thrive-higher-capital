@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="robots" content="noindex" />
     <script>
-      // Redirect /submit to /#submit no matter what the base path is
+      // Redirect /submit -> /#submit, works even if site is in a subfolder
       const p = window.location.pathname.replace(/\/+$/, "");
       const base = p.replace(/\/submit$/, "");
       window.location.replace(base + "/#submit");
