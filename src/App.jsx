@@ -31,18 +31,21 @@ const CONTACT = {
   email: "deals@thrivehighercapital.com",
   phoneDisplay: "(206) 203-1230",
   phoneHref: "+12062031230",
-  location: "Washington State — investing across Bellingham, Seattle & King County",
+  location:
+    "Washington State — investing across Bellingham, Seattle & King County",
   cta: "Get a Same-Day Offer",
   secondaryCta: "Send Me a Deal",
 };
 
 const SMS_POLICY = {
   brand: "Thrive Higher Capital",
-  purpose: "We may text you about the deal you submitted (follow-ups, questions, scheduling).",
+  purpose:
+    "We may text you about the deal you submitted (follow-ups, questions, scheduling).",
   frequency: "Message frequency varies.",
   rates: "Message & data rates may apply.",
   optOut: "Reply STOP to opt out, HELP for help.",
-  privacy: "We don’t sell your number and we only use it for business communications.",
+  privacy:
+    "We don’t sell your number and we only use it for business communications.",
 };
 
 const NAV = [
@@ -64,7 +67,8 @@ function clsx(...xs) {
 }
 
 function useScrollSpy(ids) {
-  const [active, setActive] = useState(ids?.[0] ?? "");
+  ids = Array.isArray(ids) ? ids : [];
+  const [active, setActive] = useState(ids[0] ?? "");
 
   useEffect(() => {
     const els = ids.map((id) => document.getElementById(id)).filter(Boolean);
@@ -74,10 +78,16 @@ function useScrollSpy(ids) {
       (entries) => {
         const visible = entries
           .filter((e) => e.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio || 0) - (a.intersectionRatio || 0));
+          .sort(
+            (a, b) => (b.intersectionRatio || 0) - (a.intersectionRatio || 0),
+          );
         if (visible[0]?.target?.id) setActive(visible[0].target.id);
       },
-      { root: null, threshold: [0.15, 0.25, 0.35], rootMargin: "-20% 0px -55% 0px" }
+      {
+        root: null,
+        threshold: [0.15, 0.25, 0.35],
+        rootMargin: "-20% 0px -55% 0px",
+      },
     );
 
     els.forEach((el) => obs.observe(el));
@@ -88,7 +98,11 @@ function useScrollSpy(ids) {
 }
 
 function Container({ children, className }) {
-  return <div className={clsx("mx-auto w-full max-w-6xl px-4 sm:px-6", className)}>{children}</div>;
+  return (
+    <div className={clsx("mx-auto w-full max-w-6xl px-4 sm:px-6", className)}>
+      {children}
+    </div>
+  );
 }
 
 function Pill({ icon: Icon, children }) {
@@ -109,7 +123,9 @@ function SectionTitle({ eyebrow, title, subtitle }) {
           {eyebrow}
         </div>
       )}
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h2>
+      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+        {title}
+      </h2>
       {subtitle && <p className="mt-2 text-base text-white/90">{subtitle}</p>}
     </div>
   );
@@ -117,7 +133,12 @@ function SectionTitle({ eyebrow, title, subtitle }) {
 
 function Card({ children, className }) {
   return (
-    <div className={clsx("rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md", className)}>
+    <div
+      className={clsx(
+        "rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -143,7 +164,7 @@ function Input(props) {
         "w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none",
         "focus:border-slate-400 focus:ring-2 focus:ring-slate-200",
         "placeholder:text-slate-400",
-        props.className
+        props.className,
       )}
     />
   );
@@ -156,7 +177,7 @@ function Select(props) {
       className={clsx(
         "w-full appearance-none rounded-xl border bg-white px-3 py-2 text-sm outline-none",
         "focus:border-slate-400 focus:ring-2 focus:ring-slate-200",
-        props.className
+        props.className,
       )}
     />
   );
@@ -170,7 +191,7 @@ function Textarea(props) {
         "w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none",
         "focus:border-slate-400 focus:ring-2 focus:ring-slate-200",
         "placeholder:text-slate-400",
-        props.className
+        props.className,
       )}
     />
   );
@@ -186,14 +207,19 @@ function Button({ children, variant = "primary", className, ...props }) {
     dark: "bg-slate-800 text-white hover:bg-slate-700 shadow-sm",
   };
   return (
-    <button {...props} className={clsx(base, styles[variant] || styles.primary, className)}>
+    <button
+      {...props}
+      className={clsx(base, styles[variant] || styles.primary, className)}
+    >
       {children}
     </button>
   );
 }
 
 function Divider() {
-  return <div className="my-10 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />;
+  return (
+    <div className="my-10 h-px w-full bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+  );
 }
 
 // ==============================
@@ -269,7 +295,14 @@ function DealForm({ compact = false, onSubmitted }) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch {}
-  }, [state.name, state.email, state.phone, state.role, state.preferredContact, state.smsConsent]);
+  }, [
+    state.name,
+    state.email,
+    state.phone,
+    state.role,
+    state.preferredContact,
+    state.smsConsent,
+  ]);
 
   // Requirements + consent rules
   const phoneProvided = Boolean(state.phone?.trim());
@@ -292,9 +325,12 @@ function DealForm({ compact = false, onSubmitted }) {
     state.address.trim() &&
     preferredMethodOk &&
     (!smsConsentRequired || state.smsConsent);
-    const canSubmit = !!requiredOk && status !== "sending";
+  const canSubmit = !!requiredOk && status !== "sending";
 
-  const clean = (v, max = 500) => String(v || "").trim().slice(0, max);
+  const clean = (v, max = 500) =>
+    String(v || "")
+      .trim()
+      .slice(0, max);
 
   async function submit(e) {
     e.preventDefault();
@@ -315,77 +351,76 @@ function DealForm({ compact = false, onSubmitted }) {
 
     setStatus("sending");
     setErrorMsg("");
-    
-      try {
-        const payload = {
-          name: clean(state.name, 120),
-          email: clean(state.email, 160),
-          _replyto: clean(state.email, 160),
-          phone: clean(state.phone, 40),
-        
-          role: clean(state.role, 60),
-          preferredContact: clean(state.preferredContact, 20),
-          smsConsent: state.smsConsent ? "Yes" : "No",
-        
-          address: clean(state.address, 200),
-          city: clean(state.city, 120),
-          asking: clean(state.asking, 40),
-          condition: clean(state.condition, 40),
-          timeline: clean(state.timeline, 40),
-        
-          photosLink: clean(state.photosLink, 400),
-          notes: clean(state.notes, 2000),
-        
-          _subject: `Deal Submission — ${CONTACT.brand}`,
-          page: window.location.href,
-          userAgent: navigator.userAgent,
-          _gotcha: clean(state.gotcha, 120),
-        };        
 
-        const formData = new FormData();
-        Object.entries(payload).forEach(([k, v]) => formData.append(k, v ?? ""));
-  
-        const res = await fetch(FORMSPREE_ENDPOINT, {
-          method: "POST",
-          body: formData,
-          headers: { Accept: "application/json" },
-        });
-  
-        if (!res.ok) {
-          let msg = "Submission failed. Please try again.";
-          try {
-            const data = await res.json();
-            msg =
-              data?.error ||
-              data?.message ||
-              (Array.isArray(data?.errors) && data.errors[0]?.message) ||
-              msg;
-          } catch {}
-          throw new Error(msg);
-        }        
-  
-        setStatus("success");
-  
-        // Clear only deal fields; keep contact fields (saved)
-        setState((s) => ({
-          ...s,
-          address: "",
-          city: "",
-          asking: "",
-          condition: "Average",
-          timeline: "ASAP",
-          photosLink: "",
-          notes: "",
-          gotcha: "",
-        }));
-  
-        onSubmitted?.();
-      } catch (err) {
-        setStatus("error");
-        setErrorMsg(err?.message || "Something went wrong. Please try again.");
+    try {
+      const payload = {
+        name: clean(state.name, 120),
+        email: clean(state.email, 160),
+        _replyto: clean(state.email, 160),
+        phone: clean(state.phone, 40),
+
+        role: clean(state.role, 60),
+        preferredContact: clean(state.preferredContact, 20),
+        smsConsent: state.smsConsent ? "Yes" : "No",
+
+        address: clean(state.address, 200),
+        city: clean(state.city, 120),
+        asking: clean(state.asking, 40),
+        condition: clean(state.condition, 40),
+        timeline: clean(state.timeline, 40),
+
+        photosLink: clean(state.photosLink, 400),
+        notes: clean(state.notes, 2000),
+
+        _subject: `Deal Submission — ${CONTACT.brand}`,
+        page: window.location.href,
+        userAgent: navigator.userAgent,
+        _gotcha: clean(state.gotcha, 120),
+      };
+
+      const formData = new FormData();
+      Object.entries(payload).forEach(([k, v]) => formData.append(k, v ?? ""));
+
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: formData,
+        headers: { Accept: "application/json" },
+      });
+
+      if (!res.ok) {
+        let msg = "Submission failed. Please try again.";
+        try {
+          const data = await res.json();
+          msg =
+            data?.error ||
+            data?.message ||
+            (Array.isArray(data?.errors) && data.errors[0]?.message) ||
+            msg;
+        } catch {}
+        throw new Error(msg);
       }
-    }  
-      
+
+      setStatus("success");
+
+      // Clear only deal fields; keep contact fields (saved)
+      setState((s) => ({
+        ...s,
+        address: "",
+        city: "",
+        asking: "",
+        condition: "Average",
+        timeline: "ASAP",
+        photosLink: "",
+        notes: "",
+        gotcha: "",
+      }));
+
+      onSubmitted?.();
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err?.message || "Something went wrong. Please try again.");
+    }
+  }
 
   return (
     <form
@@ -394,7 +429,11 @@ function DealForm({ compact = false, onSubmitted }) {
       aria-label="Deal submission form"
     >
       {/* Hidden fields (optional — payload already includes _subject) */}
-      <input type="hidden" name="_subject" value={`Deal Submission — ${CONTACT.brand}`} />
+      <input
+        type="hidden"
+        name="_subject"
+        value={`Deal Submission — ${CONTACT.brand}`}
+      />
       <input
         type="hidden"
         name="_redirect"
@@ -413,8 +452,8 @@ function DealForm({ compact = false, onSubmitted }) {
         />
       </div>
 
-            {/* Contact */}
-            <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-3")}>
+      {/* Contact */}
+      <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-3")}>
         <Field label="Your name *">
           <Input
             value={state.name}
@@ -445,30 +484,35 @@ function DealForm({ compact = false, onSubmitted }) {
         </Field>
       </div>
 
-{/* Property location */}
-<div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-2")}>
-  <Field label="Property address *">
-    <Input
-      value={state.address}
-      onChange={(e) => setState((s) => ({ ...s, address: e.target.value }))}
-      placeholder="123 Main St"
-      autoComplete="street-address"
-    />
-  </Field>
+      {/* Property location */}
+      <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-2")}>
+        <Field label="Property address *">
+          <Input
+            value={state.address}
+            onChange={(e) =>
+              setState((s) => ({ ...s, address: e.target.value }))
+            }
+            placeholder="123 Main St"
+            autoComplete="street-address"
+          />
+        </Field>
 
-  <Field label="City">
-    <Input
-      value={state.city}
-      onChange={(e) => setState((s) => ({ ...s, city: e.target.value }))}
-      placeholder="Seattle"
-      autoComplete="address-level2"
-    />
-  </Field>
-</div>
+        <Field label="City">
+          <Input
+            value={state.city}
+            onChange={(e) => setState((s) => ({ ...s, city: e.target.value }))}
+            placeholder="Seattle"
+            autoComplete="address-level2"
+          />
+        </Field>
+      </div>
 
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
         <Field label="I am a…">
-          <Select value={state.role} onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}>
+          <Select
+            value={state.role}
+            onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
+          >
             <option>Agent/Realtor</option>
             <option>Wholesaler</option>
             <option>Seller/Owner</option>
@@ -478,64 +522,74 @@ function DealForm({ compact = false, onSubmitted }) {
 
         {/* Preferred Contact */}
         <Field label="Preferred contact *">
-  <div className="grid gap-1">
-    <Select
-      value={state.preferredContact}
-      onChange={(e) =>
-        setState((s) => ({ ...s, preferredContact: e.target.value }))
-      }
-    >
-      <option value="Email">Email</option>
-      <option value="Text">Text</option>
-      <option value="Call">Call</option>
-    </Select>
+          <div className="grid gap-1">
+            <Select
+              value={state.preferredContact}
+              onChange={(e) =>
+                setState((s) => ({ ...s, preferredContact: e.target.value }))
+              }
+            >
+              <option value="Email">Email</option>
+              <option value="Text">Text</option>
+              <option value="Call">Call</option>
+            </Select>
 
-    <div className="text-xs text-slate-500 px-1">
-      Email, Text, or Call
-    </div>
-  </div>
-</Field>
+            <div className="text-xs text-slate-500 px-1">
+              Email, Text, or Call
+            </div>
+          </div>
+        </Field>
 
-{/* SMS Consent */}
-<Field label="SMS consent *">
-  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-    <div className="flex items-start gap-3">
-      <input
-        id="smsConsent"
-        type="checkbox"
-        className="mt-1"
-        checked={state.smsConsent}
-        onChange={(e) => setState((s) => ({ ...s, smsConsent: e.target.checked }))}
-      />
+        {/* SMS Consent */}
+        <Field label="SMS consent *">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="flex items-start gap-3">
+              <input
+                id="smsConsent"
+                type="checkbox"
+                className="mt-1"
+                checked={state.smsConsent}
+                onChange={(e) =>
+                  setState((s) => ({ ...s, smsConsent: e.target.checked }))
+                }
+              />
 
-      <label htmlFor="smsConsent" className="grid gap-1 cursor-pointer">
-        <div className="text-sm text-slate-700 leading-snug">
-          I agree to receive deal-related text messages. Message &amp; data rates may apply.
-        </div>
+              <label htmlFor="smsConsent" className="grid gap-1 cursor-pointer">
+                <div className="text-sm text-slate-700 leading-snug">
+                  I agree to receive deal-related text messages. Message &amp;
+                  data rates may apply.
+                </div>
 
-        <div className="text-xs text-slate-500">
-          {smsConsentRequired
-            ? "Required if Text is selected"
-            : "Optional"}
-        </div>
-      </label>
-    </div>
-  </div>
-</Field>
+                <div className="text-xs text-slate-500">
+                  {smsConsentRequired
+                    ? "Required if Text is selected"
+                    : "Optional"}
+                </div>
+              </label>
+            </div>
+          </div>
+        </Field>
       </div>
 
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
         <Field label="Asking price">
           <Input
             value={state.asking}
-            onChange={(e) => setState((s) => ({ ...s, asking: e.target.value }))}
+            onChange={(e) =>
+              setState((s) => ({ ...s, asking: e.target.value }))
+            }
             placeholder="$"
             inputMode="decimal"
           />
         </Field>
 
         <Field label="Condition / repairs">
-          <Select value={state.condition} onChange={(e) => setState((s) => ({ ...s, condition: e.target.value }))}>
+          <Select
+            value={state.condition}
+            onChange={(e) =>
+              setState((s) => ({ ...s, condition: e.target.value }))
+            }
+          >
             <option>Great</option>
             <option>Average</option>
             <option>Needs work</option>
@@ -544,7 +598,12 @@ function DealForm({ compact = false, onSubmitted }) {
         </Field>
 
         <Field label="Timeline">
-          <Select value={state.timeline} onChange={(e) => setState((s) => ({ ...s, timeline: e.target.value }))}>
+          <Select
+            value={state.timeline}
+            onChange={(e) =>
+              setState((s) => ({ ...s, timeline: e.target.value }))
+            }
+          >
             <option>ASAP</option>
             <option>7–14 days</option>
             <option>30 days</option>
@@ -556,13 +615,18 @@ function DealForm({ compact = false, onSubmitted }) {
       <Field label="Photos or link" hint="Google Drive, Dropbox, MLS, etc.">
         <Input
           value={state.photosLink}
-          onChange={(e) => setState((s) => ({ ...s, photosLink: e.target.value }))}
+          onChange={(e) =>
+            setState((s) => ({ ...s, photosLink: e.target.value }))
+          }
           placeholder="https://..."
           inputMode="url"
         />
       </Field>
 
-      <Field label="Notes" hint="Repairs, access, occupancy, comps, offer instructions…">
+      <Field
+        label="Notes"
+        hint="Repairs, access, occupancy, comps, offer instructions…"
+      >
         <Textarea
           value={state.notes}
           onChange={(e) => setState((s) => ({ ...s, notes: e.target.value }))}
@@ -571,44 +635,51 @@ function DealForm({ compact = false, onSubmitted }) {
         />
       </Field>
 
-
       {status === "error" && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {errorMsg}
         </div>
       )}
 
-{status === "success" && (
-  <div className="mb-6 rounded-xl border border-emerald-300 bg-emerald-100 p-4 text-sm text-emerald-800">
-    ✅ Submission complete.
-    <br />
-    Our team has received your deal and will reach out shortly.
-  </div>
-)}
+      {status === "success" && (
+        <div className="mb-6 rounded-xl border border-emerald-300 bg-emerald-100 p-4 text-sm text-emerald-800">
+          ✅ Submission complete.
+          <br />
+          Our team has received your deal and will reach out shortly.
+        </div>
+      )}
 
       <div className="sticky bottom-0 -mx-5 mt-2 border-t bg-white/95 px-5 py-4 backdrop-blur">
-        <div className={clsx("flex flex-col gap-3", "sm:flex-row sm:items-center sm:justify-between")}>
+        <div
+          className={clsx(
+            "flex flex-col gap-3",
+            "sm:flex-row sm:items-center sm:justify-between",
+          )}
+        >
           <div className="text-xs text-slate-500">
-            By submitting, you agree we can contact you about this deal. If you provide a phone number (or prefer Text),
-            SMS consent is required.
+            By submitting, you agree we can contact you about this deal. If you
+            provide a phone number (or prefer Text), SMS consent is required.
           </div>
           <div className="text-[11px] text-slate-500">
+            name:{String(!!state.name.trim())} | address:
+            {String(!!state.address.trim())} | preferredOk:
+            {String(preferredMethodOk)} | smsReq:{String(smsConsentRequired)} |
+            smsOk:{String(!smsConsentRequired || state.smsConsent)} |
+            requiredOk:{String(!!requiredOk)} | status:{String(status)} |
+            canSubmit:{String(!!canSubmit)}
+          </div>
 
-  name:{String(!!state.name.trim())} | address:{String(!!state.address.trim())} |
-  preferredOk:{String(preferredMethodOk)} | smsReq:{String(smsConsentRequired)} |
-  smsOk:{String(!smsConsentRequired || state.smsConsent)} |
-  requiredOk:{String(!!requiredOk)} | status:{String(status)} | canSubmit:{String(!!canSubmit)}
-</div>
-
-<Button
-  type="submit"
-  disabled={!requiredOk || status === "sending"}
-  className={clsx((!requiredOk || status === "sending") && "opacity-60 cursor-not-allowed")}
->
-  <Mail className="h-4 w-4" />
-  {status === "sending" ? "Sending…" : "Submit"}
-</Button>
-
+          <Button
+            type="submit"
+            disabled={!requiredOk || status === "sending"}
+            className={clsx(
+              (!requiredOk || status === "sending") &&
+                "opacity-60 cursor-not-allowed",
+            )}
+          >
+            <Mail className="h-4 w-4" />
+            {status === "sending" ? "Sending…" : "Submit"}
+          </Button>
         </div>
       </div>
     </form>
@@ -624,7 +695,9 @@ function LogoMark() {
         className="h-16 w-auto md:h-20 drop-shadow-sm"
       />
       <div className="leading-tight hidden sm:block">
-        <div className="text-sm font-semibold text-slate-900">{CONTACT.brand}</div>
+        <div className="text-sm font-semibold text-slate-900">
+          {CONTACT.brand}
+        </div>
         <div className="text-xs text-slate-500">{CONTACT.tagline}</div>
       </div>
     </div>
@@ -663,8 +736,12 @@ function Modal({ open, onClose, title, children }) {
           >
             <div className="flex items-start justify-between gap-4 border-b p-5">
               <div>
-                <div className="text-xs font-medium text-slate-500">{CONTACT.brand}</div>
-                <div className="mt-0.5 text-lg font-semibold text-slate-900">{title}</div>
+                <div className="text-xs font-medium text-slate-500">
+                  {CONTACT.brand}
+                </div>
+                <div className="mt-0.5 text-lg font-semibold text-slate-900">
+                  {title}
+                </div>
               </div>
               <button
                 onClick={onClose}
@@ -681,49 +758,119 @@ function Modal({ open, onClose, title, children }) {
     </AnimatePresence>
   );
 }
-
+const buyBox = null;
 
 // ==============================
 // APP
 // ==============================
 
-
 export default function App() {
   const [openDeal, setOpenDeal] = useState(false);
   const [openOffer, setOpenOffer] = useState(false);
 
-  const active = useScrollSpy(NAV.map((n) => n.id));
+  const [mode, setMode] = useState("home"); // "home" | "submit" | "thanks"
+
+  useEffect(() => {
+    const syncFromUrl = () => {
+      const h = (window.location.hash || "").toLowerCase();
+
+      if (h === "#/submit" || h === "#submit") setMode("submit");
+      else if (h === "#/thanks" || h === "#thanks") setMode("thanks");
+      else setMode("home");
+    };
+
+    syncFromUrl();
+    window.addEventListener("hashchange", syncFromUrl);
+    window.addEventListener("popstate", syncFromUrl);
+
+    return () => {
+      window.removeEventListener("hashchange", syncFromUrl);
+      window.removeEventListener("popstate", syncFromUrl);
+    };
+  }, []);
+
+// Keep this variable name so the rest of your file works
+const isSubmitOnly = mode === "submit";
+
+const active = useScrollSpy((Array.isArray(NAV) ? NAV : []).map((n) => n.id));
 
   const valueProps = [
-    { icon: Timer, title: "Fast answers", text: "Same-day feedback on most deals. Clear next steps and no run-around." },
-    { icon: Calculator, title: "Simple underwriting", text: "Repair scope, ARV/rent comps, exit strategy, timeline." },
-    { icon: Handshake, title: "Repeat business", text: "We build long-term relationships with agents and wholesalers." },
+    {
+      icon: Timer,
+      title: "Fast answers",
+      text: "Same-day feedback on most deals. Clear next steps and no run-around.",
+    },
+    {
+      icon: Calculator,
+      title: "Simple underwriting",
+      text: "Repair scope, ARV/rent comps, exit strategy, timeline.",
+    },
+    {
+      icon: Handshake,
+      title: "Repeat business",
+      text: "We build long-term relationships with agents and wholesalers.",
+    },
   ];
 
   const steps = [
-    { icon: FileText, title: "Send the basics", text: "Address, asking price, condition, photos/comps link, access/occupancy." },
-    { icon: LineChart, title: "We run numbers", text: "We underwrite and reply with an offer range + what we need to finalize." },
-    { icon: CheckCircle2, title: "Close clean", text: "We coordinate title/escrow and move quickly once terms are set." },
-  ];
-
-  const buyBox = [
-    { icon: Home, title: "Property types", bullets: ["Single-family", "Duplex/Triplex/4-plex", "Small multifamily", "Value-add rentals"] },
-    { icon: MapPin, title: "Areas", bullets: ["Washington State (primary)", "Bellingham + Whatcom County", "Seattle + King County"] },
-    { icon: Shield, title: "Deal profile", bullets: ["Off-market preferred", "Needs work OK", "Clear access", "Realistic pricing"] },
-    { icon: Users, title: "Partners", bullets: ["Agents", "Wholesalers", "Property managers", "Private lenders"] },
+    {
+      icon: FileText,
+      title: "Send the basics",
+      text: "Address, asking price, condition, photos/comps link, access/occupancy.",
+    },
+    {
+      icon: LineChart,
+      title: "We run numbers",
+      text: "We underwrite and reply with an offer range + what we need to finalize.",
+    },
+    {
+      icon: CheckCircle2,
+      title: "Close clean",
+      text: "We coordinate title/escrow and move quickly once terms are set.",
+    },
   ];
 
   const faqs = [
-    { q: "Do you buy with cash?", a: "We can purchase with cash or strong financing. Either way, we focus on certainty and speed." },
-    { q: "How fast can you close?", a: "Depends on title/escrow and access. Many deals can close quickly once we have what we need." },
-    { q: "What do you need to give a real offer?", a: "Address, price, condition/repairs, occupancy/access, and comps or ARV/rent picture." },
-    { q: "Do you pay assignment/wholesale fees?", a: "If the numbers work and the paperwork is clean, we consider it. Transparency helps." },
+    {
+      q: "Do you buy with cash?",
+      a: "We can purchase with cash or strong financing. Either way, we focus on certainty and speed.",
+    },
+    {
+      q: "How fast can you close?",
+      a: "Depends on title/escrow and access. Many deals can close quickly once we have what we need.",
+    },
+    {
+      q: "What do you need to give a real offer?",
+      a: "Address, price, condition/repairs, strategy/access, and comps or ARV/rent picture.",
+    },
+    {
+      q: "Do you pay assignment/wholesale fees?",
+      a: "If the numbers work and the paperwork is clean, we consider it. Transparency helps.",
+    },
   ];
 
   const hasPhone = Boolean(CONTACT.phoneHref && CONTACT.phoneHref.trim());
 
+  // ✅ FORM-ONLY PAGE (no header/hero/etc.)
+  if (isSubmitOnly) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <div className="mx-auto max-w-2xl px-4 py-10">
+          <h1 className="text-2xl font-semibold">Submit a Deal</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Share the basics and we’ll follow up quickly.
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <DealForm onSubmitted={() => (window.location.href = "/#thanks")} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#283750] via-[#283750]/90 to-slate-50 text-slate-900">
+    <div className="min-h-screen bg-linear-to-b from-[#283750] via-[#283750]/90 to-slate-50 text-slate-900">
       {/* Background blobs */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]" />
@@ -734,18 +881,26 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
         <Container className="flex items-center justify-between py-3">
-          <a href="#top" className="rounded-xl outline-none focus:ring-2 focus:ring-slate-200">
+          <a
+            href="#top"
+            className="rounded-xl outline-none focus:ring-2 focus:ring-slate-200"
+          >
             <LogoMark />
           </a>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-            {NAV.map((n) => (
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Primary"
+          >
+            {(NAV || []).map((n) => (
               <a
                 key={n.id}
                 href={`#${n.id}`}
                 className={clsx(
                   "rounded-xl px-3 py-2 text-sm font-medium transition",
-                  active === n.id ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
+                  active === n.id
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-700 hover:bg-slate-100",
                 )}
               >
                 {n.label}
@@ -754,7 +909,11 @@ export default function App() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => setOpenDeal(true)} className="hidden sm:inline-flex">
+            <Button
+              variant="ghost"
+              onClick={() => setOpenDeal(true)}
+              className="hidden sm:inline-flex"
+            >
               <ChevronRight className="h-4 w-4" />
               {CONTACT.secondaryCta}
             </Button>
@@ -773,7 +932,9 @@ export default function App() {
             {/* Left */}
             <div>
               <div className="flex flex-wrap gap-3 mb-8">
-                <Pill icon={Shield}>Straightforward, professional, fast close</Pill>
+                <Pill icon={Shield}>
+                  Straightforward, professional, fast close
+                </Pill>
                 <Pill icon={Handshake}>Relationship-first</Pill>
               </div>
 
@@ -784,12 +945,15 @@ export default function App() {
                 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl"
               >
                 We buy properties quickly across Washington State —
-                <span className="block text-white">and we’re easy to work with.</span>
+                <span className="block text-white">
+                  and we’re easy to work with.
+                </span>
               </motion.h1>
 
               <p className="mt-4 max-w-xl text-base text-white">
-                If you’re an agent, wholesaler, or seller with a deal, send it over. We give clear feedback,
-                keep communication clean, and aim for repeat business.
+                If you’re an agent, wholesaler, or seller with a deal, send it
+                over. We give clear feedback, keep communication clean, and aim
+                for repeat business.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -805,22 +969,35 @@ export default function App() {
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <Card className="p-4">
-                  <div className="text-xs font-medium text-slate-500">Primary markets</div>
-                  <div className="mt-1 text-sm font-semibold">Washington State</div>
+                  <div className="text-xs font-medium text-slate-500">
+                    Primary markets
+                  </div>
+                  <div className="mt-1 text-sm font-semibold">
+                    Washington State
+                  </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-xs font-medium text-slate-500">Key areas</div>
-                  <div className="mt-1 text-sm font-semibold">Bellingham • Seattle • King County</div>
+                  <div className="text-xs font-medium text-slate-500">
+                    Key areas
+                  </div>
+                  <div className="mt-1 text-sm font-semibold">
+                    Bellingham • Seattle • King County
+                  </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-xs font-medium text-slate-500">Deal types</div>
+                  <div className="text-xs font-medium text-slate-500">
+                    Deal types
+                  </div>
                   <div className="mt-1 text-sm font-semibold">Value-add</div>
                 </Card>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-white">
                 {hasPhone ? (
-                  <a className="inline-flex items-center gap-2 hover:text-slate-900" href={`tel:${CONTACT.phoneHref}`}>
+                  <a
+                    className="inline-flex items-center gap-2 hover:text-slate-900"
+                    href={`tel:${CONTACT.phoneHref}`}
+                  >
                     <Phone className="h-4 w-4" />
                     {CONTACT.phoneDisplay}
                   </a>
@@ -830,7 +1007,10 @@ export default function App() {
                     {CONTACT.phoneDisplay}
                   </span>
                 )}
-                <a className="inline-flex items-center gap-2 hover:text-slate-900" href={`mailto:${CONTACT.email}`}>
+                <a
+                  className="inline-flex items-center gap-2 hover:text-slate-900"
+                  href={`mailto:${CONTACT.email}`}
+                >
                   <Mail className="h-4 w-4" />
                   {CONTACT.email}
                 </a>
@@ -842,9 +1022,15 @@ export default function App() {
               <Card className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-xs font-medium text-slate-500">Quick submit</div>
-                    <div className="mt-1 text-lg font-semibold">Send a deal in 60 seconds</div>
-                    <p className="mt-1 text-sm text-slate-600">Required: your name + address + preferred contact info.</p>
+                    <div className="text-xs font-medium text-slate-500">
+                      Quick submit
+                    </div>
+                    <div className="mt-1 text-lg font-semibold">
+                      Send a deal in 60 seconds
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Required: your name + address + preferred contact info.
+                    </p>
                   </div>
                   <div className="hidden sm:block rounded-2xl bg-slate-100 p-3">
                     <FileText className="h-5 w-5" />
@@ -855,7 +1041,13 @@ export default function App() {
                   <div className="rounded-2xl border bg-slate-50 p-4">
                     <div className="text-sm font-semibold">What to send</div>
                     <ul className="mt-2 space-y-1 text-sm text-slate-600">
-                      {["Property address", "Asking price", "Condition / repairs", "Photos or link", "Access / occupancy"].map((x) => (
+                      {[
+                        "Property address",
+                        "Asking price",
+                        "Condition / repairs",
+                        "Photos or link",
+                        "Access / occupancy",
+                      ].map((x) => (
                         <li key={x} className="flex items-start gap-2">
                           <CheckCircle2 className="mt-0.5 h-4 w-4" />
                           <span>{x}</span>
@@ -868,11 +1060,18 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button onClick={() => setOpenDeal(true)} className="flex-1">
+                    <Button
+                      onClick={() => setOpenDeal(true)}
+                      className="flex-1"
+                    >
                       <Mail className="h-4 w-4" />
                       Open quick submit
                     </Button>
-                    <Button variant="ghost" onClick={() => setOpenOffer(true)} className="flex-1">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setOpenOffer(true)}
+                      className="flex-1"
+                    >
                       <Sparkles className="h-4 w-4" />
                       Get same-day offer
                     </Button>
@@ -889,7 +1088,9 @@ export default function App() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-semibold">{v.title}</div>
-                        <div className="mt-1 text-xs text-slate-600">{v.text}</div>
+                        <div className="mt-1 text-xs text-slate-600">
+                          {v.text}
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -927,7 +1128,9 @@ export default function App() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{s.title}</div>
-                      <div className="mt-1 text-sm text-slate-600">{s.text}</div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {s.text}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -949,7 +1152,7 @@ export default function App() {
           />
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {buyBox.map((b) => (
+          {(buyBox || []).map((b) => (
               <Card key={b.title}>
                 <div className="flex items-start gap-3">
                   <div className="rounded-2xl bg-slate-100 p-2">
@@ -958,7 +1161,7 @@ export default function App() {
                   <div>
                     <div className="text-sm font-semibold">{b.title}</div>
                     <ul className="mt-2 space-y-1 text-sm text-slate-600">
-                      {b.bullets.map((x) => (
+                    {(b.bullets || []).map((x) => (
                         <li key={x} className="flex items-start gap-2">
                           <span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-300" />
                           <span>{x}</span>
@@ -986,9 +1189,21 @@ export default function App() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              { icon: Shield, title: "Clean communication", text: "Clear yes/no. No ghosting. No vague maybes." },
-              { icon: Calculator, title: "Numbers-driven", text: "Repair scope + comps + exit strategy. Realistic assumptions." },
-              { icon: Handshake, title: "Win-win focus", text: "We want you paid and happy so you bring the next one." },
+              {
+                icon: Shield,
+                title: "Clean communication",
+                text: "Clear yes/no. No ghosting. No vague maybes.",
+              },
+              {
+                icon: Calculator,
+                title: "Numbers-driven",
+                text: "Repair scope + comps + exit strategy. Realistic assumptions.",
+              },
+              {
+                icon: Handshake,
+                title: "Win-win focus",
+                text: "We want you paid and happy so you bring the next one.",
+              },
             ].map((x) => (
               <Card key={x.title}>
                 <div className="flex items-start gap-3">
@@ -1007,7 +1222,9 @@ export default function App() {
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <div className="text-sm font-semibold">Deal-ready checklist</div>
-              <p className="mt-1 text-sm text-slate-600">Include these and we can underwrite faster.</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Include these and we can underwrite faster.
+              </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {[
                   "Photos (interior/exterior)",
@@ -1017,7 +1234,10 @@ export default function App() {
                   "Occupancy + access info",
                   "Preferred closing date",
                 ].map((x) => (
-                  <div key={x} className="flex items-start gap-2 rounded-2xl border bg-slate-50 p-3">
+                  <div
+                    key={x}
+                    className="flex items-start gap-2 rounded-2xl border bg-slate-50 p-3"
+                  >
                     <CheckCircle2 className="mt-0.5 h-4 w-4" />
                     <div className="text-sm text-slate-700">{x}</div>
                   </div>
@@ -1033,7 +1253,10 @@ export default function App() {
                   {CONTACT.location}
                 </div>
                 {hasPhone ? (
-                  <a className="flex items-center gap-2 text-slate-700 hover:text-slate-900" href={`tel:${CONTACT.phoneHref}`}>
+                  <a
+                    className="flex items-center gap-2 text-slate-700 hover:text-slate-900"
+                    href={`tel:${CONTACT.phoneHref}`}
+                  >
                     <Phone className="h-4 w-4" />
                     {CONTACT.phoneDisplay}
                   </a>
@@ -1043,7 +1266,10 @@ export default function App() {
                     {CONTACT.phoneDisplay}
                   </div>
                 )}
-                <a className="flex items-center gap-2 text-slate-700 hover:text-slate-900" href={`mailto:${CONTACT.email}`}>
+                <a
+                  className="flex items-center gap-2 text-slate-700 hover:text-slate-900"
+                  href={`mailto:${CONTACT.email}`}
+                >
                   <Mail className="h-4 w-4" />
                   {CONTACT.email}
                 </a>
@@ -1056,7 +1282,11 @@ export default function App() {
                 </Button>
               </div>
               <div className="mt-2">
-                <Button variant="ghost" onClick={() => setOpenOffer(true)} className="w-full">
+                <Button
+                  variant="ghost"
+                  onClick={() => setOpenOffer(true)}
+                  className="w-full"
+                >
                   <ChevronRight className="h-4 w-4" />
                   {CONTACT.cta}
                 </Button>
@@ -1071,7 +1301,11 @@ export default function App() {
       {/* FAQ */}
       <section id="faq" className="scroll-mt-24">
         <Container className="py-10">
-          <SectionTitle eyebrow="FAQ" title="Common questions" subtitle="Quick answers so you can move faster." />
+          <SectionTitle
+            eyebrow="FAQ"
+            title="Common questions"
+            subtitle="Quick answers so you can move faster."
+          />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {faqs.map((f) => (
               <Card key={f.q}>
@@ -1084,15 +1318,28 @@ export default function App() {
           <div className="mt-8 rounded-3xl border bg-slate-900 p-6 text-white shadow-sm">
             <div className="grid gap-6 md:grid-cols-2 md:items-center">
               <div>
-                <div className="text-sm font-semibold">Ready to send a deal?</div>
-                <p className="mt-1 text-sm text-white/80">Hit the button, submit the basics, and we’ll reply with next steps.</p>
+                <div className="text-sm font-semibold">
+                  Ready to send a deal?
+                </div>
+                <p className="mt-1 text-sm text-white/80">
+                  Hit the button, submit the basics, and we’ll reply with next
+                  steps.
+                </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
-                <Button variant="subtle" onClick={() => setOpenDeal(true)} className="bg-white text-slate-900 hover:bg-slate-100">
+                <Button
+                  variant="subtle"
+                  onClick={() => setOpenDeal(true)}
+                  className="bg-white text-slate-900 hover:bg-slate-100"
+                >
                   <Mail className="h-4 w-4" />
                   {CONTACT.secondaryCta}
                 </Button>
-                <Button variant="subtle" onClick={() => setOpenOffer(true)} className="bg-white text-slate-900 hover:bg-slate-100">
+                <Button
+                  variant="subtle"
+                  onClick={() => setOpenOffer(true)}
+                  className="bg-white text-slate-900 hover:bg-slate-100"
+                >
                   <ChevronRight className="h-4 w-4" />
                   {CONTACT.cta}
                 </Button>
@@ -1113,24 +1360,32 @@ export default function App() {
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Card>
               <div className="text-sm font-semibold">How we use texts</div>
-              <p className="mt-2 text-sm text-slate-600">{SMS_POLICY.purpose}</p>
+              <p className="mt-2 text-sm text-slate-600">
+                {SMS_POLICY.purpose}
+              </p>
               <div className="mt-4 space-y-2 text-sm text-slate-600">
                 <div>
-                  <span className="font-medium text-slate-700">Frequency:</span> {SMS_POLICY.frequency}
+                  <span className="font-medium text-slate-700">Frequency:</span>{" "}
+                  {SMS_POLICY.frequency}
                 </div>
                 <div>
-                  <span className="font-medium text-slate-700">Rates:</span> {SMS_POLICY.rates}
+                  <span className="font-medium text-slate-700">Rates:</span>{" "}
+                  {SMS_POLICY.rates}
                 </div>
                 <div>
-                  <span className="font-medium text-slate-700">Opt-out:</span> {SMS_POLICY.optOut}
+                  <span className="font-medium text-slate-700">Opt-out:</span>{" "}
+                  {SMS_POLICY.optOut}
                 </div>
               </div>
             </Card>
             <Card>
               <div className="text-sm font-semibold">Privacy</div>
-              <p className="mt-2 text-sm text-slate-600">{SMS_POLICY.privacy}</p>
+              <p className="mt-2 text-sm text-slate-600">
+                {SMS_POLICY.privacy}
+              </p>
               <p className="mt-3 text-xs text-slate-500">
-                Note: This site submits deals via Formspree. Texts are used only for follow-up once we receive your submission.
+                Note: This site submits deals via Formspree. Texts are used only
+                for follow-up once we receive your submission.
               </p>
             </Card>
           </div>
@@ -1144,19 +1399,27 @@ export default function App() {
             <div className="mt-6 md:mt-2">
               <LogoMark />
               <p className="mt-3 text-sm text-slate-600">
-                Investing with integrity and clarity. We aim for fast answers, clean closings, and long-term partnerships.
+                Investing with integrity and clarity. We aim for fast answers,
+                clean closings, and long-term partnerships.
               </p>
             </div>
 
             <div className="mt-6 md:mt-0">
               <div className="text-sm font-semibold">Quick links</div>
               <div className="mt-3 grid gap-2 text-sm">
-                {NAV.map((n) => (
-                  <a key={n.id} href={`#${n.id}`} className="text-slate-600 hover:text-slate-900">
+              {(NAV || []).map((n) => (
+                  <a
+                    key={n.id}
+                    href={`#${n.id}`}
+                    className="text-slate-600 hover:text-slate-900"
+                  >
                     {n.label}
                   </a>
                 ))}
-                <button onClick={() => setOpenDeal(true)} className="text-left text-slate-600 hover:text-slate-900">
+                <button
+                  onClick={() => setOpenDeal(true)}
+                  className="text-left text-slate-600 hover:text-slate-900"
+                >
                   {CONTACT.secondaryCta}
                 </button>
               </div>
@@ -1170,7 +1433,10 @@ export default function App() {
                   {CONTACT.location}
                 </div>
                 {hasPhone ? (
-                  <a className="flex items-center gap-2 hover:text-slate-900" href={`tel:${CONTACT.phoneHref}`}>
+                  <a
+                    className="flex items-center gap-2 hover:text-slate-900"
+                    href={`tel:${CONTACT.phoneHref}`}
+                  >
                     <Phone className="h-4 w-4" />
                     {CONTACT.phoneDisplay}
                   </a>
@@ -1180,7 +1446,10 @@ export default function App() {
                     {CONTACT.phoneDisplay}
                   </div>
                 )}
-                <a className="flex items-center gap-2 hover:text-slate-900" href={`mailto:${CONTACT.email}`}>
+                <a
+                  className="flex items-center gap-2 hover:text-slate-900"
+                  href={`mailto:${CONTACT.email}`}
+                >
                   <Mail className="h-4 w-4" />
                   {CONTACT.email}
                 </a>
@@ -1190,8 +1459,9 @@ export default function App() {
 
           <div className="mt-10 flex flex-col gap-2 border-t pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              © {new Date().getFullYear()} {CONTACT.brand}. All rights reserved. Thrive Higher Capital is a private investment group.
-              Not a brokerage.
+              © {new Date().getFullYear()} {CONTACT.brand}. All rights reserved.
+              Thrive Higher Capital is a private investment group. Not a
+              brokerage.
             </div>
             <div className="flex flex-wrap gap-4">
               <span>Privacy-friendly</span>
@@ -1203,16 +1473,25 @@ export default function App() {
       </footer>
 
       {/* Modals */}
-<Modal open={openDeal} onClose={() => setOpenDeal(false)} title="Send a deal">
-  <DealForm onSubmitted={() => setOpenDeal(false)} />
-</Modal>
+      <Modal
+        open={openDeal}
+        onClose={() => setOpenDeal(false)}
+        title="Send a deal"
+      >
+        <DealForm onSubmitted={() => setOpenDeal(false)} />
+      </Modal>
 
-      <Modal open={openOffer} onClose={() => setOpenOffer(false)} title="Get a same-day offer (quick details)">
+      <Modal
+        open={openOffer}
+        onClose={() => setOpenOffer(false)}
+        title="Get a same-day offer (quick details)"
+      >
         <div className="grid gap-4">
           <div className="rounded-2xl border bg-slate-50 p-4">
             <div className="text-sm font-semibold">Best way to start</div>
             <p className="mt-1 text-sm text-slate-600">
-              Send the property address + your best estimate of repairs/condition. If you have comps, include them.
+              Send the property address + your best estimate of
+              repairs/condition. If you have comps, include them.
             </p>
           </div>
           <DealForm onSubmitted={() => setOpenOffer(false)} />
@@ -1223,7 +1502,11 @@ export default function App() {
       <div className="fixed bottom-3 left-0 right-0 z-30 md:hidden">
         <Container>
           <div className="flex gap-2 rounded-3xl border bg-white/90 p-2 shadow-lg backdrop-blur">
-            <Button variant="ghost" onClick={() => setOpenDeal(true)} className="flex-1">
+            <Button
+              variant="ghost"
+              onClick={() => setOpenDeal(true)}
+              className="flex-1"
+            >
               <Mail className="h-4 w-4" />
               Send deal
             </Button>
@@ -1238,14 +1521,15 @@ export default function App() {
   );
 }
 
-
 /* Manual smoke tests (quick checklist)
 1) Fill Name + Email + Address -> Submit becomes enabled.
 2) If you enter a Phone number, SMS consent must be checked.
 3) Submission should go to Formspree (not mailto).
 4) Phone links should be clickable everywhere (tel:+12062031230).
 */
-{/* Page footer / debug stamp */}
+{
+  /* Page footer / debug stamp */
+}
 <div className="mt-4 text-center text-[10px] text-slate-400">
   build: 2026-01-12-3
-</div>
+</div>;
