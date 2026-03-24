@@ -239,7 +239,7 @@ function DealForm({ compact = false, onSubmitted }) {
   
   async function handleSubmit(e) {
     e.preventDefault();
-  console.log("submit fired");
+    console.log("submit fired from DealForm");
   
     try {
       setStatus("sending");
@@ -398,40 +398,45 @@ function DealForm({ compact = false, onSubmitted }) {
       {/* Contact */}
       <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-3")}>
         <Field label="Your name *">
-          <Input
-            value={state.name}
-            onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-            placeholder="Full name"
-            autoComplete="name"
+        <Input
+  name="name"
+  value={state.name}
+  onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+  placeholder="Full name"
+  autoComplete="name"
+/>
           />
         </Field>
 
         <Field label="Email">
-          <Input
-            value={state.email}
-            onChange={(e) => setState((s) => ({ ...s, email: e.target.value }))}
-            placeholder="you@email.com"
-            inputMode="email"
-            autoComplete="email"
-          />
+        <Input
+  name="email"
+  value={state.email}
+  onChange={(e) => setState((s) => ({ ...s, email: e.target.value }))}
+  placeholder="you@email.com"
+  inputMode="email"
+  autoComplete="email"
+/>
         </Field>
 
         <Field label="Phone">
-          <Input
-            value={state.phone}
-            onChange={(e) => setState((s) => ({ ...s, phone: e.target.value }))}
-            placeholder="(206) 555-1234"
-            inputMode="tel"
-            autoComplete="tel"
-          />
+        <Input
+  name="phone"
+  value={state.phone}
+  onChange={(e) => setState((s) => ({ ...s, phone: e.target.value }))}
+  placeholder="(206) 555-1234"
+  inputMode="tel"
+  autoComplete="tel"
+/>
         </Field>
       </div>
 
       {/* Property location */}
       <div className={clsx("grid gap-3", compact ? "" : "sm:grid-cols-2")}>
         <Field label="Property address *">
-          <Input
-            value={state.address}
+        <Input
+  name="address"
+  value={state.address}
             onChange={(e) =>
               setState((s) => ({ ...s, address: e.target.value }))
             }
@@ -441,8 +446,9 @@ function DealForm({ compact = false, onSubmitted }) {
         </Field>
 
         <Field label="City">
-          <Input
-            value={state.city}
+        <Input
+  name="city"
+  value={state.city}
             onChange={(e) => setState((s) => ({ ...s, city: e.target.value }))}
             placeholder="Seattle"
             autoComplete="address-level2"
@@ -452,8 +458,9 @@ function DealForm({ compact = false, onSubmitted }) {
 
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
         <Field label="I am a…">
-          <Select
-            value={state.role}
+        <Select
+  name="role"
+  value={state.role}
             onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
           >
             <option>Agent/Realtor</option>
