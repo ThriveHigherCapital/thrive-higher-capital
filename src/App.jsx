@@ -23,7 +23,7 @@ import {
 // ==============================
 
 // Replace with your real Formspree endpoint
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqayvpq";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzgeezk";
 
 const CONTACT = {
   brand: "Thrive Higher Capital",
@@ -200,12 +200,14 @@ function Textarea(props) {
 function Button({ children, variant = "primary", className, ...props }) {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition active:scale-[0.99]";
+
   const styles = {
     primary: "bg-slate-900 text-white hover:bg-slate-800 shadow-sm",
     ghost: "bg-white text-slate-900 hover:bg-slate-50 border shadow-sm",
     subtle: "bg-slate-100 text-slate-900 hover:bg-slate-200",
     dark: "bg-slate-800 text-white hover:bg-slate-700 shadow-sm",
   };
+
   return (
     <button
       {...props}
@@ -228,13 +230,45 @@ function Divider() {
 
 function DealForm({ compact = false, onSubmitted }) {
   // You must have these defined somewhere (or keep them here):
-
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzgeezk";
   // const STORAGE_KEY = "dealFormContact";
   // const FORMSPREE_ENDPOINT = FORMSPREE_DEAL_ENDPOINT; // or your real endpoint
 
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState("");
-
+  
+  async function handleSubmit(e) {
+    e.preventDefault();
+  console.log("submit fired");
+  
+    try {
+      setStatus("sending");
+  
+      const form = e.target;
+      const formData = new FormData(form);
+  
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        form.reset();
+        setStatus("success");
+      } else {
+        console.log("Form submit failed:", data);
+        setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
+        setStatus("error");
+      }
+      } catch (err) {
+       console.log("Submit catch error:", err);
+      setErrorMsg(err?.message || "Network error");
+      setStatus("error");
+         }
+  }
   // Load contact fields from localStorage
   const [state, setState] = useState(() => {
     try {
@@ -332,99 +366,8 @@ function DealForm({ compact = false, onSubmitted }) {
       .trim()
       .slice(0, max);
 
-  async function submit(e) {
-    e.preventDefault();
-    setErrorMsg("");
-
-    // Honeypot spam trap: if filled, pretend success
-    if (state.gotcha && state.gotcha.trim()) {
-      setStatus("success");
-      onSubmitted?.();
-      return;
-    }
-
-    if (!requiredOk) {
-      setStatus("error");
-      setErrorMsg("Please complete the required fields before submitting.");
-      return;
-    }
-
-    setStatus("sending");
-    setErrorMsg("");
-
-    try {
-      const payload = {
-        name: clean(state.name, 120),
-        email: clean(state.email, 160),
-        _replyto: clean(state.email, 160),
-        phone: clean(state.phone, 40),
-
-        role: clean(state.role, 60),
-        preferredContact: clean(state.preferredContact, 20),
-        smsConsent: state.smsConsent ? "Yes" : "No",
-
-        address: clean(state.address, 200),
-        city: clean(state.city, 120),
-        asking: clean(state.asking, 40),
-        condition: clean(state.condition, 40),
-        timeline: clean(state.timeline, 40),
-
-        photosLink: clean(state.photosLink, 400),
-        notes: clean(state.notes, 2000),
-
-        _subject: `Deal Submission — ${CONTACT.brand}`,
-        page: window.location.href,
-        userAgent: navigator.userAgent,
-        _gotcha: clean(state.gotcha, 120),
-      };
-
-      const formData = new FormData();
-      Object.entries(payload).forEach(([k, v]) => formData.append(k, v ?? ""));
-
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
-
-      if (!res.ok) {
-        let msg = "Submission failed. Please try again.";
-        try {
-          const data = await res.json();
-          msg =
-            data?.error ||
-            data?.message ||
-            (Array.isArray(data?.errors) && data.errors[0]?.message) ||
-            msg;
-        } catch {}
-        throw new Error(msg);
-      }
-
-      setStatus("success");
-
-      // Clear only deal fields; keep contact fields (saved)
-      setState((s) => ({
-        ...s,
-        address: "",
-        city: "",
-        asking: "",
-        condition: "Average",
-        timeline: "ASAP",
-        photosLink: "",
-        notes: "",
-        gotcha: "",
-      }));
-
-      onSubmitted?.();
-    } catch (err) {
-      setStatus("error");
-      setErrorMsg(err?.message || "Something went wrong. Please try again.");
-    }
-  }
-
   return (
-    <form
-      onSubmit={submit}
+    <form onSubmit={handleSubmit}
       className={clsx("grid gap-3", compact ? "" : "gap-4")}
       aria-label="Deal submission form"
     >
@@ -660,26 +603,17 @@ function DealForm({ compact = false, onSubmitted }) {
             By submitting, you agree we can contact you about this deal. If you
             provide a phone number (or prefer Text), SMS consent is required.
           </div>
-          <div className="text-[11px] text-slate-500">
-            name:{String(!!state.name.trim())} | address:
-            {String(!!state.address.trim())} | preferredOk:
-            {String(preferredMethodOk)} | smsReq:{String(smsConsentRequired)} |
-            smsOk:{String(!smsConsentRequired || state.smsConsent)} |
-            requiredOk:{String(!!requiredOk)} | status:{String(status)} |
-            canSubmit:{String(!!canSubmit)}
-          </div>
-
           <Button
-            type="submit"
-            disabled={!requiredOk || status === "sending"}
-            className={clsx(
-              (!requiredOk || status === "sending") &&
-                "opacity-60 cursor-not-allowed",
-            )}
-          >
-            <Mail className="h-4 w-4" />
-            {status === "sending" ? "Sending…" : "Submit"}
-          </Button>
+  type="submit"
+  disabled={!canSubmit}
+  className={clsx(
+    (!requiredOk || status === "sending") &&
+      "opacity-60 cursor-not-allowed",
+  )}
+>
+  <Mail className="h-5 w-5" />
+  {status === "sending" ? "Sending…" : "Submit"}
+</Button>
         </div>
       </div>
     </form>
@@ -1530,6 +1464,3 @@ const active = useScrollSpy((Array.isArray(NAV) ? NAV : []).map((n) => n.id));
 {
   /* Page footer / debug stamp */
 }
-<div className="mt-4 text-center text-[10px] text-slate-400">
-  build: 2026-01-12-3
-</div>;
