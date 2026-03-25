@@ -269,6 +269,7 @@ formData.append("notes", state.notes);
         },
       });
       const data = await response.json();
+
       if (response.ok) {
         setState({
           name: "",
@@ -286,17 +287,19 @@ formData.append("notes", state.notes);
           notes: "",
           gotcha: "",
         });
-      
-        setStatus("success");
 
-        setTimeout(() => {
-          onSubmitted?.(); // triggers redirect
-        }, 2000);
-        } else {
-          console.log("Form submit failed:", data);
-          setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
-          setStatus("error");
-        }
+        setStatus("success");
+// onSubmitted?.();  ← REMOVE or comment this
+      } else {
+        console.log("Form submit failed:", data);
+        setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
+        setStatus("error");
+      }
+    } catch (err) {
+      console.log("Submit catch error:", err);
+      setErrorMsg(err?.message || "Network error");
+      setStatus("error");
+    }
   }
   // Load contact fields from localStorage
   const [state, setState] = useState(() => {
