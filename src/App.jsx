@@ -506,6 +506,7 @@ formData.append("notes", state.notes);
         <Field label="Preferred contact *">
           <div className="grid gap-1">
             <Select
+              name="preferredContact"
               value={state.preferredContact}
               onChange={(e) =>
                 setState((s) => ({ ...s, preferredContact: e.target.value }))
@@ -526,9 +527,10 @@ formData.append("notes", state.notes);
         <Field label="SMS consent *">
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="flex items-start gap-3">
-              <input
-                id="smsConsent"
-                type="checkbox"
+            <input
+  id="smsConsent"
+  name="smsConsent"
+  type="checkbox"
                 className="mt-1"
                 checked={state.smsConsent}
                 onChange={(e) =>
@@ -555,8 +557,9 @@ formData.append("notes", state.notes);
 
       <div className={clsx("grid gap-3", "sm:grid-cols-3")}>
         <Field label="Asking price">
-          <Input
-            value={state.asking}
+        <Input
+  name="asking"
+  value={state.asking}
             onChange={(e) =>
               setState((s) => ({ ...s, asking: e.target.value }))
             }
@@ -566,8 +569,9 @@ formData.append("notes", state.notes);
         </Field>
 
         <Field label="Condition / repairs">
-          <Select
-            value={state.condition}
+        <Select
+  name="condition"
+  value={state.condition}
             onChange={(e) =>
               setState((s) => ({ ...s, condition: e.target.value }))
             }
@@ -580,8 +584,9 @@ formData.append("notes", state.notes);
         </Field>
 
         <Field label="Timeline">
-          <Select
-            value={state.timeline}
+        <Select
+  name="timeline"
+  value={state.timeline}
             onChange={(e) =>
               setState((s) => ({ ...s, timeline: e.target.value }))
             }
@@ -595,8 +600,9 @@ formData.append("notes", state.notes);
       </div>
 
       <Field label="Photos or link" hint="Google Drive, Dropbox, MLS, etc.">
-        <Input
-          value={state.photosLink}
+      <Input
+  name="photosLink"
+  value={state.photosLink}
           onChange={(e) =>
             setState((s) => ({ ...s, photosLink: e.target.value }))
           }
@@ -610,7 +616,8 @@ formData.append("notes", state.notes);
         hint="Repairs, access, occupancy, comps, offer instructions…"
       >
         <Textarea
-          value={state.notes}
+  name="notes"
+  value={state.notes}
           onChange={(e) => setState((s) => ({ ...s, notes: e.target.value }))}
           placeholder="ARV / rent comps, repairs, access, occupancy, offer instructions…"
           rows={compact ? 3 : 4}
