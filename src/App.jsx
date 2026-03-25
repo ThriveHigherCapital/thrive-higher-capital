@@ -231,7 +231,7 @@ function Divider() {
 function DealForm({ compact = false, onSubmitted }) {
   // You must have these defined somewhere (or keep them here):
   const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzgeezk";
-  // const STORAGE_KEY = "dealFormContact";
+  const STORAGE_KEY = "dealFormContact";
   // const FORMSPREE_ENDPOINT = FORMSPREE_DEAL_ENDPOINT; // or your real endpoint
 
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
@@ -244,8 +244,22 @@ function DealForm({ compact = false, onSubmitted }) {
     try {
       setStatus("sending");
   
-      const form = e.target;
-      const formData = new FormData(form);
+      const formData = new FormData();
+
+formData.append("name", state.name);
+formData.append("email", state.email);
+formData.append("phone", state.phone);
+formData.append("role", state.role);
+formData.append("preferredContact", state.preferredContact);
+formData.append("smsConsent", state.smsConsent ? "Yes" : "No");
+
+formData.append("address", state.address);
+formData.append("city", state.city);
+formData.append("asking", state.asking);
+formData.append("condition", state.condition);
+formData.append("timeline", state.timeline);
+formData.append("photosLink", state.photosLink);
+formData.append("notes", state.notes);
   
       const response = await fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
@@ -256,8 +270,26 @@ function DealForm({ compact = false, onSubmitted }) {
       });
       const data = await response.json();
       if (response.ok) {
-        form.reset();
+        setState({
+          name: "",
+          email: "",
+          phone: "",
+          role: "Agent/Realtor",
+          preferredContact: "Email",
+          smsConsent: false,
+          address: "",
+          city: "",
+          asking: "",
+          condition: "Average",
+          timeline: "ASAP",
+          photosLink: "",
+          notes: "",
+          gotcha: "",
+        });
+      
         setStatus("success");
+      
+        onSubmitted?.(); // triggers redirect
       } else {
         console.log("Form submit failed:", data);
         setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
