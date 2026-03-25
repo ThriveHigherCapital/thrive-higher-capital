@@ -288,18 +288,15 @@ formData.append("notes", state.notes);
         });
       
         setStatus("success");
-      
-        onSubmitted?.(); // triggers redirect
-      } else {
-        console.log("Form submit failed:", data);
-        setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
-        setStatus("error");
-      }
-      } catch (err) {
-       console.log("Submit catch error:", err);
-      setErrorMsg(err?.message || "Network error");
-      setStatus("error");
-         }
+
+        setTimeout(() => {
+          onSubmitted?.(); // triggers redirect
+        }, 2000);
+        } else {
+          console.log("Form submit failed:", data);
+          setErrorMsg(data?.error || data?.errors?.[0]?.message || "Submission failed");
+          setStatus("error");
+        }
   }
   // Load contact fields from localStorage
   const [state, setState] = useState(() => {
